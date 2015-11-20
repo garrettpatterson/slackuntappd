@@ -23,9 +23,9 @@ function checkifvowel($string) {
 	}
 }
 
-$client_id = "";
-$client_secret = "";
-$slack_token = "";  //loose slack-token auth
+$client_id = "CLIENTIDHERE";
+$client_secret = "CLIENTSECRETHERE";
+$slack_token = "SLACKTOKENHERE";  //loose slack-token auth
 $ut = new UntappdPHP($client_id, $client_secret, "");
 
 header("Content-type: application/json");
