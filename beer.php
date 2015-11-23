@@ -23,9 +23,9 @@ function checkifvowel($string) {
 	}
 }
 
-$client_id = "CLIENTIDHERE";
-$client_secret = "CLIENTSECRETHERE";
-$slack_token = "SLACKTOKENHERE";  //loose slack-token auth
+$client_id = "[CLIENT ID HERE]";
+$client_secret = "CLIENT SECRET HERE";
+$slack_token = "[SLACK TOKEN HERE]";
 $ut = new UntappdPHP($client_id, $client_secret, "");
 
 header("Content-type: application/json");
@@ -75,13 +75,39 @@ if (isset($_POST)) {
 				$text .= "> /untappd user bsurma \n";
 				$text .= "* Get Beer info \n";
 				$text .= "> /untappd beer Manny's \n"; 
+				$text .= "* Get Brewery info \n";
+				$text .= "> /untappd brewery Georgetown\n"; 
 				$data["text"] = $text;
-			}else {
+			}elseif($command=="brewery"){
+				$brewery_search = trim(join(" ",array_slice($commands,1)));
+				
+				$result = $ut->get("/search/brewery", array("q"=>$brewery_search, "limit"=>0));
+				
+				if ($result->meta->code == 200) {
+	
+					if ($result->response->found > 0) {
+						$brewery_id = $result->response->brewery->items[0]->brewery->brewery_id;
+						
+						$result = $ut->get("/brewery/info/" . $brewery_id);
+						
+						if ($result->meta->code == 200) {
+							$brewery = $result->response->brewery;
+							$data["text"] = "*".$brewery->brewery_name . "* from *" . $brewery->location->brewery_city . ", ". $brewery->location->brewery_state . "* is ".checkifvowel($brewery->brewery_type)." ".$brewery->brewery_type ." - http://untappd.com/brewery/".$brewery->brewery_id;
+						}
+					}else{
+						$data["text"] = "No breweries found matching: " . $brewery_search;
+						$data["text"] = $result->meta->code . " error on Beer Search - please try again! Error - ". $result->meta->developer_friendly;
+						$data["search_term"] = $real_beer_name;
+					}
+					
+				}
+				
+			}else{
 			
-			
-				$beer_name = explode("beer", $event_json->text);
-				if ( ! array_key_exists('1', $beer_name) ){
-					$beer_name =  $event_json->text;
+				if($command=="beer"){
+					$beer_name = join(" ",array_slice($commands,1));
+				}else{
+					$beer_name = $event_json->text;
 				}
 				
 				
